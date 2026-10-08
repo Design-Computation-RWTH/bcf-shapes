@@ -1,0 +1,12 @@
+@prefix bcfOWL:  <https://w3id.org/bcfOWL#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix sosa:    <http://www.w3.org/ns/sosa/> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+@prefix ex:      <https://example.org/fixture#> .
+
+# A Topic must have exactly one dcterms:title. This one has none.
+ex:topic-no-title a bcfOWL:Topic ;
+    dcterms:identifier "no-title" ;
+    dcterms:creator ex:anna ;
+    dcterms:created "2026-01-01T00:00:00Z"^^xsd:dateTime ;
+    bcfOWL:hasProject ex:project .

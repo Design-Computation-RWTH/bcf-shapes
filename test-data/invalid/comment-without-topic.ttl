@@ -1,0 +1,14 @@
+@prefix bcfOWL:  <https://w3id.org/bcfOWL#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix sosa:    <http://www.w3.org/ns/sosa/> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+@prefix ex:      <https://example.org/fixture#> .
+
+# A Comment must belong to exactly one Topic. Its semantics are inseparable
+# from the Topic it comments on.
+ex:comment-orphan a bcfOWL:Comment ;
+    dcterms:identifier "orphan" ;
+    bcfOWL:hasCommentText "An orphan comment." ;
+    dcterms:creator ex:anna ;
+    dcterms:created "2026-01-01T00:00:00Z"^^xsd:dateTime ;
+    bcfOWL:hasProject ex:project .

@@ -1,0 +1,165 @@
+# The change history of a Topic (the statement-level provenance pattern).
+# The current value is asserted directly. Earlier values stay available as
+# reified triple terms, with PROV-O activities that say who changed what and when.
+# This is the same information as a BCF event service log.
+# Uses RDF 1.2 triple-term syntax.
+
+@prefix bcfOWL:  <https://w3id.org/bcfOWL#> .
+@prefix bot:     <https://w3id.org/bot#> .
+@prefix dcat:    <http://www.w3.org/ns/dcat#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix prov:    <http://www.w3.org/ns/prov#> .
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix schema:  <http://schema.org/> .
+@prefix skos:    <http://www.w3.org/2004/02/skos/core#> .
+@prefix spot:    <https://w3id.org/spot#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+@prefix ex:      <https://example.org/bcfowl-example#> .
+
+# CURRENT STATE: the Topic is resolved. The unqualified shortcut names the last editor.
+ex:topic1
+  bcfOWL:hasTopicStatus ex:status_resolved;
+  bcfOWL:modifiedBy ex:mep_engineer.
+
+# CHANGES
+ex:change1 a prov:Activity;
+  rdfs:label "Topic created by the clash detection run"@en;
+  prov:endedAtTime "2026-03-12T09:05:00Z"^^xsd:dateTime;
+  prov:wasAssociatedWith ex:clash_detector.
+
+ex:change2 a prov:Activity;
+  rdfs:label "Status changed to In progress"@en;
+  prov:endedAtTime "2026-03-13T08:30:00Z"^^xsd:dateTime;
+  prov:wasAssociatedWith ex:mep_engineer.
+
+ex:change3 a prov:Activity;
+  rdfs:label "Status changed to Resolved"@en;
+  prov:endedAtTime "2026-03-20T16:10:00Z"^^xsd:dateTime;
+  prov:wasAssociatedWith ex:mep_engineer.
+
+# STATUS HISTORY: one reified statement per value, linked as a revision chain.
+ex:statusAssertion1 a prov:Entity;
+  rdf:reifies <<( ex:topic1 bcfOWL:hasTopicStatus ex:status_open )>>;
+  prov:wasGeneratedBy ex:change1;
+  prov:wasInvalidatedBy ex:change2.
+
+ex:statusAssertion2 a prov:Entity;
+  rdf:reifies <<( ex:topic1 bcfOWL:hasTopicStatus ex:status_in_progress )>>;
+  prov:wasGeneratedBy ex:change2;
+  prov:wasRevisionOf ex:statusAssertion1;
+  prov:wasInvalidatedBy ex:change3.
+
+ex:statusAssertion3 a prov:Entity;
+  rdf:reifies <<( ex:topic1 bcfOWL:hasTopicStatus ex:status_resolved )>>;
+  prov:wasGeneratedBy ex:change3;
+  prov:wasRevisionOf ex:statusAssertion2.
+
+# The same pattern applies to any other mutable value, for example the title:
+ex:titleAssertion1 a prov:Entity;
+  rdf:reifies <<( ex:topic1 <http://purl.org/dc/terms/title> "Duct D-204 clashes with beam B-117 on level 2" )>>;
+  prov:wasGeneratedBy ex:change1.
+
+# QUERY (SPARQL 1.2): the status the Topic had before it was resolved.
+#
+#   SELECT ?status WHERE {
+#     ?a rdf:reifies <<( ex:topic1 bcfOWL:hasTopicStatus ?status )>> ;
+#        prov:wasInvalidatedBy ex:change3 .
+#   }
+
+#################################################################
+# CONTEXT: the resources that the data above refers to.
+#################################################################
+
+# The project, its users and its extension schema.
+ex:project a bcfOWL:Project;
+  dcterms:identifier "b25906e0-2ca8-4fcd-97d9-8b4a4a2b9a3f";
+  dcterms:title "Office building, design coordination";
+  bcfOWL:hasExtensionSchema ex:extension_schema;
+  # The space in which BCF API coordinates of this project are exposed and accepted.
+  bcfOWL:referenceSpace ex:building_space.
+
+# The coordinate system of the federated model.
+ex:building_space a spot:AssetSpace.
+
+# The federated model that the issues refer to.
+ex:federated_model a dcat:Dataset;
+  dcterms:title "Office building, federated IFC model";
+  dcat:distribution [
+    a dcat:Distribution;
+    dcat:downloadURL <https://example.org/models/office-federated.ifc>;
+    dcat:mediaType "application/x-step"
+  ].
+
+# USERS (project participants)
+ex:structural_engineer a prov:Person, prov:Agent;
+  dcterms:identifier "structure@example.org".
+
+ex:mep_engineer a prov:Person, prov:Agent;
+  dcterms:identifier "mep@example.org".
+
+# Software can also be an agent, for example an automatic clash detection run.
+ex:clash_detector a prov:SoftwareAgent, prov:Agent;
+  dcterms:identifier "clash-detector@example.org".
+
+# EXTENSION SCHEMA
+ex:extension_schema a bcfOWL:ExtensionSchema;
+  bcfOWL:hasUser ex:structural_engineer, ex:mep_engineer, ex:clash_detector;
+  bcfOWL:hasTypeScheme ex:type_scheme;
+  bcfOWL:hasStatusScheme ex:status_scheme;
+  bcfOWL:hasLabelScheme ex:label_scheme;
+  bcfOWL:hasPriorityScheme ex:priority_scheme;
+  bcfOWL:hasStageScheme ex:stage_scheme.
+
+ex:type_scheme a skos:ConceptScheme; skos:prefLabel "Issue types"@en.
+ex:type_clash a bcfOWL:TopicType;
+  skos:inScheme ex:type_scheme; skos:prefLabel "Clash"@en.
+ex:type_rfi a bcfOWL:TopicType;
+  skos:inScheme ex:type_scheme; skos:prefLabel "Request for information"@en.
+
+ex:status_scheme a skos:ConceptScheme; skos:prefLabel "Issue statuses"@en.
+ex:status_open a bcfOWL:TopicStatus;
+  skos:inScheme ex:status_scheme; skos:prefLabel "Open"@en.
+ex:status_in_progress a bcfOWL:TopicStatus;
+  skos:inScheme ex:status_scheme; skos:prefLabel "In progress"@en.
+ex:status_resolved a bcfOWL:TopicStatus;
+  skos:inScheme ex:status_scheme; skos:prefLabel "Resolved"@en.
+
+ex:label_scheme a skos:ConceptScheme; skos:prefLabel "Disciplines"@en.
+ex:label_structure a bcfOWL:Label;
+  skos:inScheme ex:label_scheme; skos:prefLabel "Structure"@en.
+ex:label_mep a bcfOWL:Label;
+  skos:inScheme ex:label_scheme; skos:prefLabel "MEP"@en.
+
+ex:priority_scheme a skos:ConceptScheme; skos:prefLabel "Priorities"@en.
+ex:priority_high a bcfOWL:Priority;
+  skos:inScheme ex:priority_scheme; skos:prefLabel "High"@en.
+
+ex:stage_scheme a skos:ConceptScheme; skos:prefLabel "Design stages"@en.
+ex:stage_detailed_design a bcfOWL:Stage;
+  skos:inScheme ex:stage_scheme; skos:prefLabel "Detailed design"@en.
+
+# The Topic and the two clashing elements.
+# The status is left out, because this file gives the current status.
+ex:topic1 a bcfOWL:Topic;
+  bcfOWL:hasProject ex:project;
+  dcterms:identifier "5a52cbe2-edd7-41d8-b610-fab29397cc74";
+  dcterms:title "Duct D-204 clashes with beam B-117 on level 2";
+  dcterms:description "The supply air duct passes through the flange of the steel beam. Clearance is negative by about 80 mm.";
+  dcterms:creator ex:clash_detector;
+  dcterms:created "2026-03-12T09:05:00Z"^^xsd:dateTime;
+  bcfOWL:hasTopicType ex:type_clash;
+  bcfOWL:hasPriority ex:priority_high;
+  bcfOWL:hasStage ex:stage_detailed_design;
+  bcfOWL:hasLabels ex:label_mep, ex:label_structure;
+  bcfOWL:hasAssignedTo ex:mep_engineer;
+  bcfOWL:hasDueDate "2026-03-27T00:00:00Z"^^xsd:dateTime;
+  # The BCF reference_links field. More precise relations may be added next to it.
+  bcfOWL:hasReferenceLink ex:duct_d204, ex:beam_b117;
+  schema:about ex:duct_d204, ex:beam_b117.
+
+ex:duct_d204 a bot:Element;
+  dcterms:title "Supply air duct D-204".
+
+ex:beam_b117 a bot:Element;
+  dcterms:title "Steel beam B-117".

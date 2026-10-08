@@ -1,0 +1,251 @@
+# A Viewpoint for a clash between a duct and a beam.
+# Part A is the view itself: a virtual camera, its pose in the model and the
+# rendered image. These exist without BCF. Part B is the BCF Viewpoint that refers
+# to them and adds the visual state for the viewer. Part C is a second viewpoint
+# with an orthogonal camera.
+
+@prefix bcfOWL:  <https://w3id.org/bcfOWL#> .
+@prefix bot:     <https://w3id.org/bot#> .
+@prefix dcat:    <http://www.w3.org/ns/dcat#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix gom:     <https://w3id.org/gom#> .
+@prefix prov:    <http://www.w3.org/ns/prov#> .
+@prefix schema:  <http://schema.org/> .
+@prefix skos:    <http://www.w3.org/2004/02/skos/core#> .
+@prefix sosa:    <http://www.w3.org/ns/sosa/> .
+@prefix spot:    <https://w3id.org/spot#> .
+@prefix spot-sg: <https://w3id.org/spot/sg#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+@prefix ex:      <https://example.org/bcfowl-example#> .
+
+#################################################################
+# A. THE VIEW (no BCF)
+#################################################################
+
+# The virtual camera of the viewer application, and the viewer as software agent.
+ex:viewer_camera a sosa:Sensor.
+ex:bim_viewer a prov:SoftwareAgent.
+
+# The observation is the hub: everything else hangs off it.
+ex:view1 a sosa:Observation, prov:Activity;
+  sosa:madeBySensor ex:viewer_camera;
+  sosa:hasFeatureOfInterest ex:federated_model;
+  sosa:resultTime "2026-03-12T09:05:00"^^xsd:dateTime;
+  sosa:hasResult ex:snapshot1;
+  prov:wasAssociatedWith ex:bim_viewer;
+  prov:used ex:viewer_camera;
+  # projection parameters
+  bcfOWL:hasFieldOfView "60.0"^^xsd:double;
+  bcfOWL:hasAspectRatio "1.7777777778"^^xsd:double.
+
+# Pose of the camera in the model at this view. It represents the view, not the device.
+ex:view1_pose a spot:PointSpace;
+  spot:represents ex:view1;
+  spot:hasAppearance [
+    a spot:EntityAppearance;
+    spot:appearsIn ex:building_space;
+    gom:hasTransformationMatrix "[0.707,0.707,0,0,-0.354,0.354,0.866,0,0.612,-0.612,0.5,0,24.5,18.0,9.2,1]"^^gom:columnMajorArray
+  ].
+
+# The rendered image, also the SOSA result.
+ex:snapshot1 a dcat:Dataset, sosa:Result;
+  prov:wasGeneratedBy ex:view1;
+  dcat:distribution [
+    a dcat:Distribution;
+    dcat:downloadURL <https://example.org/snapshots/clash-d204-b117.png>;
+    dcat:mediaType "image/png"
+  ].
+
+# Optional pixel layer, only for mapping image pixels to model coordinates.
+ex:snapshot1_space a spot:AreaSpace;
+  spot:represents ex:snapshot1;
+  spot-sg:hasBoundingBox "[0,0,0,1920,1080,0]"^^spot-sg:boundingBoxArray;
+  spot:hasAppearance [
+    a spot:EntityAppearance;
+    spot:appearsIn ex:view1_pose;
+    gom:hasTransformationMatrix "[...]"^^gom:columnMajorArray
+  ].
+
+#################################################################
+# B. THE BCF VIEWPOINT
+#################################################################
+
+ex:viewpoint1 a bcfOWL:Viewpoint;
+  bcfOWL:hasProject ex:project;
+  bcfOWL:hasTopic ex:topic1;
+  dcterms:identifier "8c61fb85-b73e-4182-988f-d7e5988d348d";
+  dcterms:creator ex:clash_detector;
+  dcterms:created "2026-03-12T09:05:00Z"^^xsd:dateTime;
+  # the view and its image
+  bcfOWL:hasPerspectiveCamera ex:view1;
+  bcfOWL:hasSnapshot ex:snapshot1;
+  # default visibility and view-setup hints
+  bcfOWL:hasDefaultVisibility true;
+  bcfOWL:spacesVisible false;
+  bcfOWL:spaceBoundariesVisible false;
+  bcfOWL:openingsVisible true;
+  # The two clashing elements are selected.
+  bcfOWL:hasSelectedComponent ex:component_duct, ex:component_beam;
+  # The ceiling is hidden. It would hide the duct from this angle.
+  bcfOWL:hasVisibilityException ex:component_ceiling;
+  # The duct is red and the beam is yellow (RRGGBB).
+  bcfOWL:hasColoring [
+    a bcfOWL:Coloring;
+    bcfOWL:hasColor "FF0000";
+    bcfOWL:hasComponent ex:component_duct
+  ], [
+    a bcfOWL:Coloring;
+    bcfOWL:hasColor "FFD500";
+    bcfOWL:hasComponent ex:component_beam
+  ];
+  # Cut away the model above the ceiling level of level 2.
+  bcfOWL:hasClippingPlane [
+    a bcfOWL:ClippingPlane;
+    bcfOWL:hasLocation "[24.5,18.0,7.4]"^^bcfOWL:point3D;
+    bcfOWL:hasDirection "[0.0,0.0,1.0]"^^bcfOWL:vector3D
+  ];
+  # A line markup that shows the penetration depth. Markup can be a blank node
+  # or, as here, an IRI that other data can refer to.
+  bcfOWL:hasLine ex:viewpoint1_line1.
+
+ex:viewpoint1_line1 a bcfOWL:Line;
+  bcfOWL:hasStartPoint "[26.1,18.0,6.62]"^^bcfOWL:point3D;
+  bcfOWL:hasEndPoint "[26.1,18.0,6.70]"^^bcfOWL:point3D.
+
+# Components refer to the building element by IRI. The IFC GUID is the fallback
+# for tools that do not use IRIs.
+ex:component_duct a bcfOWL:Component;
+  bcfOWL:hasElement ex:duct_d204;
+  bcfOWL:hasIfcGuid "2O2Fr$t4X7Zf8NOew3FLOH";
+  bcfOWL:hasAuthoringToolId "D-204";
+  bcfOWL:hasOriginatingSystem ex:mep_tool.
+
+ex:component_beam a bcfOWL:Component;
+  bcfOWL:hasElement ex:beam_b117;
+  bcfOWL:hasIfcGuid "3Yb7mQ1Hn5AwK$d0R8Vt2c";
+  bcfOWL:hasAuthoringToolId "B-117";
+  bcfOWL:hasOriginatingSystem ex:structure_tool.
+
+# A component can be given by IFC GUID only.
+ex:component_ceiling a bcfOWL:Component;
+  bcfOWL:hasIfcGuid "1lXv3sKj90Cw8$b5TqP4eD".
+
+# Software with which the elements were created.
+ex:mep_tool a bcfOWL:OriginatingSystem;
+  dcterms:title "MEP authoring tool".
+
+ex:structure_tool a bcfOWL:OriginatingSystem;
+  dcterms:title "Structural analysis and design tool".
+
+#################################################################
+# C. A SECOND VIEWPOINT: orthogonal plan view of level 2
+#################################################################
+
+# The view-to-world scale and the aspect ratio belong to the observation.
+ex:viewpoint2 a bcfOWL:Viewpoint;
+  bcfOWL:hasProject ex:project;
+  bcfOWL:hasTopic ex:topic1;
+  dcterms:identifier "e02f1c5a-6f4b-4f0e-9a43-5f9c3d1a7b88";
+  bcfOWL:hasOrthogonalCamera ex:view2;
+  bcfOWL:hasSelectedComponent ex:component_duct, ex:component_beam.
+
+ex:view2 a sosa:Observation;
+  bcfOWL:hasViewToWorldScale "12.5"^^xsd:double;
+  bcfOWL:hasAspectRatio "1.7777777778"^^xsd:double.
+
+#################################################################
+# CONTEXT: the resources that the data above refers to.
+#################################################################
+
+# The project, its users and its extension schema.
+ex:project a bcfOWL:Project;
+  dcterms:identifier "b25906e0-2ca8-4fcd-97d9-8b4a4a2b9a3f";
+  dcterms:title "Office building, design coordination";
+  bcfOWL:hasExtensionSchema ex:extension_schema;
+  # The space in which BCF API coordinates of this project are exposed and accepted.
+  bcfOWL:referenceSpace ex:building_space.
+
+# The coordinate system of the federated model.
+ex:building_space a spot:AssetSpace.
+
+# The federated model that the issues refer to.
+ex:federated_model a dcat:Dataset;
+  dcterms:title "Office building, federated IFC model";
+  dcat:distribution [
+    a dcat:Distribution;
+    dcat:downloadURL <https://example.org/models/office-federated.ifc>;
+    dcat:mediaType "application/x-step"
+  ].
+
+# USERS (project participants)
+ex:structural_engineer a prov:Person, prov:Agent;
+  dcterms:identifier "structure@example.org".
+
+ex:mep_engineer a prov:Person, prov:Agent;
+  dcterms:identifier "mep@example.org".
+
+# Software can also be an agent, for example an automatic clash detection run.
+ex:clash_detector a prov:SoftwareAgent, prov:Agent;
+  dcterms:identifier "clash-detector@example.org".
+
+# EXTENSION SCHEMA
+ex:extension_schema a bcfOWL:ExtensionSchema;
+  bcfOWL:hasUser ex:structural_engineer, ex:mep_engineer, ex:clash_detector;
+  bcfOWL:hasTypeScheme ex:type_scheme;
+  bcfOWL:hasStatusScheme ex:status_scheme;
+  bcfOWL:hasLabelScheme ex:label_scheme;
+  bcfOWL:hasPriorityScheme ex:priority_scheme;
+  bcfOWL:hasStageScheme ex:stage_scheme.
+
+ex:type_scheme a skos:ConceptScheme; skos:prefLabel "Issue types"@en.
+ex:type_clash a bcfOWL:TopicType;
+  skos:inScheme ex:type_scheme; skos:prefLabel "Clash"@en.
+ex:type_rfi a bcfOWL:TopicType;
+  skos:inScheme ex:type_scheme; skos:prefLabel "Request for information"@en.
+
+ex:status_scheme a skos:ConceptScheme; skos:prefLabel "Issue statuses"@en.
+ex:status_open a bcfOWL:TopicStatus;
+  skos:inScheme ex:status_scheme; skos:prefLabel "Open"@en.
+ex:status_in_progress a bcfOWL:TopicStatus;
+  skos:inScheme ex:status_scheme; skos:prefLabel "In progress"@en.
+ex:status_resolved a bcfOWL:TopicStatus;
+  skos:inScheme ex:status_scheme; skos:prefLabel "Resolved"@en.
+
+ex:label_scheme a skos:ConceptScheme; skos:prefLabel "Disciplines"@en.
+ex:label_structure a bcfOWL:Label;
+  skos:inScheme ex:label_scheme; skos:prefLabel "Structure"@en.
+ex:label_mep a bcfOWL:Label;
+  skos:inScheme ex:label_scheme; skos:prefLabel "MEP"@en.
+
+ex:priority_scheme a skos:ConceptScheme; skos:prefLabel "Priorities"@en.
+ex:priority_high a bcfOWL:Priority;
+  skos:inScheme ex:priority_scheme; skos:prefLabel "High"@en.
+
+ex:stage_scheme a skos:ConceptScheme; skos:prefLabel "Design stages"@en.
+ex:stage_detailed_design a bcfOWL:Stage;
+  skos:inScheme ex:stage_scheme; skos:prefLabel "Detailed design"@en.
+
+# The Topic and the two clashing elements.
+ex:topic1 a bcfOWL:Topic;
+  bcfOWL:hasProject ex:project;
+  dcterms:identifier "5a52cbe2-edd7-41d8-b610-fab29397cc74";
+  dcterms:title "Duct D-204 clashes with beam B-117 on level 2";
+  dcterms:description "The supply air duct passes through the flange of the steel beam. Clearance is negative by about 80 mm.";
+  dcterms:creator ex:clash_detector;
+  dcterms:created "2026-03-12T09:05:00Z"^^xsd:dateTime;
+  bcfOWL:hasTopicType ex:type_clash;
+  bcfOWL:hasTopicStatus ex:status_open;
+  bcfOWL:hasPriority ex:priority_high;
+  bcfOWL:hasStage ex:stage_detailed_design;
+  bcfOWL:hasLabels ex:label_mep, ex:label_structure;
+  bcfOWL:hasAssignedTo ex:mep_engineer;
+  bcfOWL:hasDueDate "2026-03-27T00:00:00Z"^^xsd:dateTime;
+  # The BCF reference_links field. More precise relations may be added next to it.
+  bcfOWL:hasReferenceLink ex:duct_d204, ex:beam_b117;
+  schema:about ex:duct_d204, ex:beam_b117.
+
+ex:duct_d204 a bot:Element;
+  dcterms:title "Supply air duct D-204".
+
+ex:beam_b117 a bot:Element;
+  dcterms:title "Steel beam B-117".

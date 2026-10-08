@@ -1,0 +1,16 @@
+@prefix bcfOWL:  <https://w3id.org/bcfOWL#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix sosa:    <http://www.w3.org/ns/sosa/> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+@prefix ex:      <https://example.org/fixture#> .
+
+# The status is a valid TopicStatus, but it belongs to a scheme this project
+# does not declare. Only the SHACL-SPARQL shape catches this; a Core-only
+# validator accepts the file.
+ex:topic-foreign-status a bcfOWL:Topic ;
+    dcterms:identifier "foreign-status" ;
+    dcterms:title "Foreign status" ;
+    dcterms:creator ex:anna ;
+    dcterms:created "2026-01-01T00:00:00Z"^^xsd:dateTime ;
+    bcfOWL:hasProject ex:project ;
+    bcfOWL:hasTopicStatus ex:status-foreign .

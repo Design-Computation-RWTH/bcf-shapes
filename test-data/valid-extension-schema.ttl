@@ -1,0 +1,82 @@
+# A BCF Project with its extension schema.
+# Scenario: design coordination on an office building. Architects, structural
+# engineers and MEP engineers exchange issues about a federated IFC model.
+# The extension schema lists the allowed values for topic type, status, label,
+# priority and stage. Each list is a skos:ConceptScheme; each value is a
+# skos:Concept of the matching bcfOWL class (a subclass of skos:Concept).
+
+@prefix bcfOWL:  <https://w3id.org/bcfOWL#> .
+@prefix dcat:    <http://www.w3.org/ns/dcat#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix prov:    <http://www.w3.org/ns/prov#> .
+@prefix skos:    <http://www.w3.org/2004/02/skos/core#> .
+@prefix spot:    <https://w3id.org/spot#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+@prefix ex:      <https://example.org/bcfowl-example#> .
+
+ex:project a bcfOWL:Project;
+  dcterms:identifier "b25906e0-2ca8-4fcd-97d9-8b4a4a2b9a3f";
+  dcterms:title "Office building, design coordination";
+  bcfOWL:hasExtensionSchema ex:extension_schema;
+  # The space in which BCF API coordinates of this project are exposed and accepted.
+  bcfOWL:referenceSpace ex:building_space.
+
+# The coordinate system of the federated model.
+ex:building_space a spot:AssetSpace.
+
+# The federated model that the issues refer to.
+ex:federated_model a dcat:Dataset;
+  dcterms:title "Office building, federated IFC model";
+  dcat:distribution [
+    a dcat:Distribution;
+    dcat:downloadURL <https://example.org/models/office-federated.ifc>;
+    dcat:mediaType "application/x-step"
+  ].
+
+# USERS (project participants)
+ex:structural_engineer a prov:Person, prov:Agent;
+  dcterms:identifier "structure@example.org".
+
+ex:mep_engineer a prov:Person, prov:Agent;
+  dcterms:identifier "mep@example.org".
+
+# Software can also be an agent, for example an automatic clash detection run.
+ex:clash_detector a prov:SoftwareAgent, prov:Agent;
+  dcterms:identifier "clash-detector@example.org".
+
+# EXTENSION SCHEMA
+ex:extension_schema a bcfOWL:ExtensionSchema;
+  bcfOWL:hasUser ex:structural_engineer, ex:mep_engineer, ex:clash_detector;
+  bcfOWL:hasTypeScheme ex:type_scheme;
+  bcfOWL:hasStatusScheme ex:status_scheme;
+  bcfOWL:hasLabelScheme ex:label_scheme;
+  bcfOWL:hasPriorityScheme ex:priority_scheme;
+  bcfOWL:hasStageScheme ex:stage_scheme.
+
+ex:type_scheme a skos:ConceptScheme; skos:prefLabel "Issue types"@en.
+ex:type_clash a bcfOWL:TopicType;
+  skos:inScheme ex:type_scheme; skos:prefLabel "Clash"@en.
+ex:type_rfi a bcfOWL:TopicType;
+  skos:inScheme ex:type_scheme; skos:prefLabel "Request for information"@en.
+
+ex:status_scheme a skos:ConceptScheme; skos:prefLabel "Issue statuses"@en.
+ex:status_open a bcfOWL:TopicStatus;
+  skos:inScheme ex:status_scheme; skos:prefLabel "Open"@en.
+ex:status_in_progress a bcfOWL:TopicStatus;
+  skos:inScheme ex:status_scheme; skos:prefLabel "In progress"@en.
+ex:status_resolved a bcfOWL:TopicStatus;
+  skos:inScheme ex:status_scheme; skos:prefLabel "Resolved"@en.
+
+ex:label_scheme a skos:ConceptScheme; skos:prefLabel "Disciplines"@en.
+ex:label_structure a bcfOWL:Label;
+  skos:inScheme ex:label_scheme; skos:prefLabel "Structure"@en.
+ex:label_mep a bcfOWL:Label;
+  skos:inScheme ex:label_scheme; skos:prefLabel "MEP"@en.
+
+ex:priority_scheme a skos:ConceptScheme; skos:prefLabel "Priorities"@en.
+ex:priority_high a bcfOWL:Priority;
+  skos:inScheme ex:priority_scheme; skos:prefLabel "High"@en.
+
+ex:stage_scheme a skos:ConceptScheme; skos:prefLabel "Design stages"@en.
+ex:stage_detailed_design a bcfOWL:Stage;
+  skos:inScheme ex:stage_scheme; skos:prefLabel "Detailed design"@en.

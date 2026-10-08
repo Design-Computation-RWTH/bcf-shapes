@@ -1,0 +1,21 @@
+@prefix bcfOWL:  <https://w3id.org/bcfOWL#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix prov:    <http://www.w3.org/ns/prov#> .
+@prefix skos:    <http://www.w3.org/2004/02/skos/core#> .
+@prefix spot:    <https://w3id.org/spot#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+@prefix ex:      <https://example.org/fixture#> .
+
+# The priority is a valid bcfOWL:Priority, but it belongs to a scheme that this
+# project does not declare. Only the SHACL-SPARQL shape catches this fault.
+ex:priority-foreign a bcfOWL:Priority ;
+    skos:inScheme ex:foreign-scheme ;
+    skos:prefLabel "Foreign"@en .
+
+ex:topic-foreign-priority a bcfOWL:Topic ;
+    dcterms:identifier "foreign-priority" ;
+    dcterms:title "Foreign priority" ;
+    dcterms:creator ex:anna ;
+    dcterms:created "2026-01-01T00:00:00Z"^^xsd:dateTime ;
+    bcfOWL:hasProject ex:project ;
+    bcfOWL:hasPriority ex:priority-foreign .

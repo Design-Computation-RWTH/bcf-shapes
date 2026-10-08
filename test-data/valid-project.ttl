@@ -1,0 +1,53 @@
+@prefix bcfOWL:  <https://w3id.org/bcfOWL#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix prov:    <http://www.w3.org/ns/prov#> .
+@prefix skos:    <http://www.w3.org/2004/02/skos/core#> .
+@prefix spot:    <https://w3id.org/spot#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+@prefix ex:      <https://example.org/fixture#> .
+
+#################################################################
+#  A conforming project, shared by the invalid test files.
+#
+#  Each invalid test file loads this file plus its own fault, so the only reason
+#  it fails validation is the rule it is named after.
+#################################################################
+
+ex:assetspace a spot:AssetSpace .
+
+ex:anna a prov:Person .
+
+ex:project a bcfOWL:Project ;
+    dcterms:identifier "fixture-project" ;
+    dcterms:title "Fixture project"@en ;
+    bcfOWL:referenceSpace ex:assetspace ;
+    bcfOWL:hasExtensionSchema ex:extensions .
+
+ex:extensions a bcfOWL:ExtensionSchema ;
+    bcfOWL:hasStatusScheme ex:status-scheme ;
+    bcfOWL:hasTypeScheme ex:type-scheme ;
+    bcfOWL:hasLabelScheme ex:label-scheme ;
+    bcfOWL:hasPriorityScheme ex:priority-scheme ;
+    bcfOWL:hasStageScheme ex:stage-scheme ;
+    bcfOWL:hasUser ex:anna .
+
+ex:status-scheme a skos:ConceptScheme .
+ex:type-scheme a skos:ConceptScheme .
+ex:label-scheme a skos:ConceptScheme .
+ex:priority-scheme a skos:ConceptScheme .
+ex:stage-scheme a skos:ConceptScheme .
+
+# A scheme this project does NOT declare, for the membership test.
+ex:foreign-scheme a skos:ConceptScheme .
+
+ex:status-open a bcfOWL:TopicStatus ;
+    skos:inScheme ex:status-scheme ;
+    skos:prefLabel "Open"@en .
+
+ex:status-closed a bcfOWL:TopicStatus ;
+    skos:inScheme ex:status-scheme ;
+    skos:prefLabel "Closed"@en .
+
+ex:status-foreign a bcfOWL:TopicStatus ;
+    skos:inScheme ex:foreign-scheme ;
+    skos:prefLabel "Foreign"@en .

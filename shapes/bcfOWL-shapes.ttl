@@ -1,0 +1,611 @@
+@prefix sh:      <http://www.w3.org/ns/shacl#> .
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:     <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix prov:    <http://www.w3.org/ns/prov#> .
+@prefix dcat:    <http://www.w3.org/ns/dcat#> .
+@prefix skos:    <http://www.w3.org/2004/02/skos/core#> .
+@prefix sosa:    <http://www.w3.org/ns/sosa/> .
+@prefix bot:     <https://w3id.org/bot#> .
+@prefix spot:    <https://w3id.org/spot#> .
+@prefix bcfOWL:  <https://w3id.org/bcfOWL#> .
+@prefix bcfsh:   <https://w3id.org/bcfOWL/shapes#> .
+
+#  SHACL shapes for bcfOWL 1.0.0 (https://w3id.org/bcfOWL#)
+#
+#  These shapes carry the structural contract that the bcfOWL OWL file
+#  deliberately does not state. OWL cardinality misfires under the open-world
+#  assumption (it infers rather than validates); the cardinality, mutual
+#  exclusion and controlled-vocabulary rules therefore live here.
+#
+#  Design boundary: shapes target the BCF coordination layer (Topic, Comment,
+#  Viewpoint, Project, ExtensionSchema). They do NOT target sosa:Observation,
+#  sosa:Sensor or the media (dcat:Dataset). A photograph or its capture exists
+#  freely and is unconstrained until a Viewpoint references it. The camera
+#  requirements (field of view, view-to-world-scale) are reached only THROUGH a
+#  Viewpoint's camera reference, so they apply to an observation only at the
+#  moment it is served as a BCF camera, never to the native resource itself.
+
+#  Project
+
+bcfsh:ProjectShape
+        a            sh:NodeShape ;
+        sh:targetClass bcfOWL:Project ;
+        sh:property [
+            sh:path dcterms:identifier ;
+            sh:minCount 1 ; sh:maxCount 1 ;
+            sh:datatype xsd:string ;
+            sh:message "A Project must have exactly one dcterms:identifier (its BCF project_id)." ] ;
+        sh:property [
+            sh:path dcterms:title ;
+            sh:minCount 1 ; sh:maxCount 1 ;
+            sh:or ( [ sh:datatype xsd:string ] [ sh:datatype rdf:langString ] ) ;
+            sh:message "A Project must have exactly one dcterms:title, as a string literal." ] ;
+        sh:property [
+            sh:path bcfOWL:hasExtensionSchema ;
+            sh:minCount 1 ; sh:maxCount 1 ;
+            sh:class bcfOWL:ExtensionSchema ;
+            sh:message "A Project must reference exactly one ExtensionSchema." ] ;
+        sh:property [
+            sh:path bcfOWL:referenceSpace ;
+            sh:minCount 1 ; sh:maxCount 1 ;
+            sh:class spot:AssetSpace ;
+            sh:nodeKind sh:IRI ;
+            sh:message "A Project must reference exactly one SPOT AssetSpace." ] .
+
+#  Extension Schema
+#  A project schema must offer at least a status and a type scheme and at least
+#  one valid author; label/priority/stage schemes are optional. At most one
+#  scheme per category.
+
+bcfsh:ExtensionSchemaShape
+        a            sh:NodeShape ;
+        sh:targetClass bcfOWL:ExtensionSchema ;
+        sh:property [
+            sh:path bcfOWL:hasStatusScheme ;
+            sh:minCount 1 ; sh:maxCount 1 ;
+            sh:class skos:ConceptScheme ;
+            sh:message "An ExtensionSchema must reference exactly one status scheme." ] ;
+        sh:property [
+            sh:path bcfOWL:hasTypeScheme ;
+            sh:minCount 1 ; sh:maxCount 1 ;
+            sh:class skos:ConceptScheme ;
+            sh:message "An ExtensionSchema must reference exactly one type scheme." ] ;
+        sh:property [
+            sh:path bcfOWL:hasLabelScheme ;
+            sh:maxCount 1 ;
+            sh:class skos:ConceptScheme ] ;
+        sh:property [
+            sh:path bcfOWL:hasPriorityScheme ;
+            sh:maxCount 1 ;
+            sh:class skos:ConceptScheme ] ;
+        sh:property [
+            sh:path bcfOWL:hasStageScheme ;
+            sh:maxCount 1 ;
+            sh:class skos:ConceptScheme ] ;
+        sh:property [
+            sh:path bcfOWL:hasUser ;
+            sh:minCount 1 ;
+            sh:class prov:Agent ;
+            sh:message "An ExtensionSchema must define at least one project user (agent)." ] .
+
+#  Modified author
+#  The unqualified shortcut is optional, but at most one agent can represent
+#  the most recent modification at any given time. targetSubjectsOf ensures the
+#  rule applies to every resource using the property.
+
+bcfsh:ModifiedByShape
+        a            sh:NodeShape ;
+        sh:targetSubjectsOf bcfOWL:modifiedBy ;
+        sh:property [
+            sh:path bcfOWL:modifiedBy ;
+            sh:maxCount 1 ;
+            sh:class prov:Agent ;
+            sh:message "A resource may have at most one bcfOWL:modifiedBy at a time." ] .
+
+#  Topic
+
+bcfsh:TopicShape
+        a            sh:NodeShape ;
+        sh:targetClass bcfOWL:Topic ;
+        sh:property [
+            sh:path dcterms:identifier ;
+            sh:minCount 1 ; sh:maxCount 1 ;
+            sh:datatype xsd:string ;
+            sh:message "A Topic must have exactly one dcterms:identifier (its BCF GUID)." ] ;
+        sh:property [
+            sh:path bcfOWL:hasProject ;
+            sh:minCount 1 ; sh:maxCount 1 ;
+            sh:class bcfOWL:Project ;
+            sh:message "A Topic must belong to exactly one Project." ] ;
+        sh:property [
+            sh:path dcterms:title ;
+            sh:minCount 1 ; sh:maxCount 1 ;
+            sh:or ( [ sh:datatype xsd:string ] [ sh:datatype rdf:langString ] ) ;
+            sh:message "A Topic must have exactly one dcterms:title, as a string literal." ] ;
+        sh:property [
+            sh:path dcterms:creator ;
+            sh:minCount 1 ; sh:maxCount 1 ;
+            sh:class prov:Agent ;
+            sh:message "A Topic must have exactly one dcterms:creator, and the creator must be a prov:Agent." ] ;
+        sh:property [
+            sh:path dcterms:created ;
+            sh:minCount 1 ; sh:maxCount 1 ;
+            sh:datatype xsd:dateTime ;
+            sh:message "A Topic must have exactly one dcterms:created." ] ;
+        sh:property [
+            sh:path dcterms:modified ;
+            sh:maxCount 1 ;
+            sh:datatype xsd:dateTime ;
+            sh:message "A Topic can have at most one dcterms:modified." ] ;
+        sh:property [
+            sh:path dcterms:description ;
+            sh:maxCount 1 ] ;
+        sh:property [
+            sh:path bcfOWL:hasIndex ;
+            sh:maxCount 1 ;
+            sh:datatype xsd:integer ] ;
+        sh:property [
+            sh:path bcfOWL:hasAssignedTo ;
+            sh:maxCount 1 ;
+            sh:class prov:Agent ] ;
+        sh:property [
+            sh:path bcfOWL:hasDueDate ;
+            sh:maxCount 1 ;
+            sh:datatype xsd:dateTime ] ;
+        sh:property [
+            sh:path bcfOWL:hasTopicStatus ;
+            sh:maxCount 1 ;
+            sh:class bcfOWL:TopicStatus ] ;
+        sh:property [
+            sh:path bcfOWL:hasTopicType ;
+            sh:maxCount 1 ;
+            sh:class bcfOWL:TopicType ] ;
+        sh:property [
+            sh:path bcfOWL:hasPriority ;
+            sh:maxCount 1 ;
+            sh:class bcfOWL:Priority ] ;
+        sh:property [
+            sh:path bcfOWL:hasStage ;
+            sh:maxCount 1 ;
+            sh:class bcfOWL:Stage ] ;
+        sh:property [
+            sh:path bcfOWL:hasLabels ;
+            sh:class bcfOWL:Label ] .
+
+#  Comment
+
+bcfsh:CommentShape
+        a            sh:NodeShape ;
+        sh:targetClass bcfOWL:Comment ;
+        sh:property [
+            sh:path bcfOWL:hasCommentText ;
+            sh:minCount 1 ; sh:maxCount 1 ;
+            sh:datatype xsd:string ;
+            sh:message "A Comment must have exactly one hasCommentText." ] ;
+        sh:property [
+            sh:path dcterms:creator ;
+            sh:minCount 1 ; sh:maxCount 1 ;
+            sh:class prov:Agent ;
+            sh:message "A Comment must have exactly one dcterms:creator, and the creator must be a prov:Agent." ] ;
+        sh:property [
+            sh:path dcterms:created ;
+            sh:minCount 1 ; sh:maxCount 1 ;
+            sh:datatype xsd:dateTime ;
+            sh:message "A Comment must have exactly one dcterms:created." ] ;
+        sh:property [
+            sh:path dcterms:modified ;
+            sh:maxCount 1 ;
+            sh:datatype xsd:dateTime ;
+            sh:message "A Comment can have at most one dcterms:modified." ] ;
+        sh:property [
+            sh:path bcfOWL:hasTopic ;
+            sh:minCount 1 ; sh:maxCount 1 ;
+            sh:class bcfOWL:Topic ;
+            sh:message "A Comment must belong to exactly one Topic." ] ;
+        sh:property [
+            sh:path bcfOWL:hasProject ;
+            sh:minCount 1 ; sh:maxCount 1 ;
+            sh:class bcfOWL:Project ] ;
+        sh:property [
+            sh:path bcfOWL:hasViewpoint ;
+            sh:maxCount 1 ;
+            sh:class bcfOWL:Viewpoint ;
+            sh:message "A Comment may reference at most one Viewpoint." ] .
+
+#  Viewpoint
+
+bcfsh:ViewpointShape
+        a            sh:NodeShape ;
+        sh:targetClass bcfOWL:Viewpoint ;
+        sh:nodeKind sh:IRI ;
+        sh:property [
+            sh:path dcterms:identifier ;
+            sh:minCount 1 ; sh:maxCount 1 ;
+            sh:datatype xsd:string ;
+            sh:message "A Viewpoint must have exactly one dcterms:identifier (its BCF GUID)." ] ;
+        sh:property [
+            sh:path bcfOWL:hasTopic ;
+            sh:minCount 1 ; sh:maxCount 1 ;
+            sh:class bcfOWL:Topic ] ;
+        sh:property [
+            sh:path bcfOWL:hasProject ;
+            sh:minCount 1 ; sh:maxCount 1 ;
+            sh:class bcfOWL:Project ] ;
+        sh:property [
+            sh:path bcfOWL:hasIndex ;
+            sh:maxCount 1 ;
+            sh:datatype xsd:integer ] ;
+        sh:property [
+            sh:path bcfOWL:hasDefaultVisibility ;
+            sh:maxCount 1 ;
+            sh:datatype xsd:boolean ;
+            sh:message "A Viewpoint may state at most one hasDefaultVisibility." ] ;
+        sh:property [
+            sh:path bcfOWL:spaceBoundariesVisible ;
+            sh:maxCount 1 ;
+            sh:datatype xsd:boolean ] ;
+        sh:property [
+            sh:path bcfOWL:openingsVisible ;
+            sh:maxCount 1 ;
+            sh:datatype xsd:boolean ] ;
+        sh:property [
+            sh:path bcfOWL:spacesVisible ;
+            sh:maxCount 1 ;
+            sh:datatype xsd:boolean ] ;
+        sh:property [
+            sh:path bcfOWL:hasSelectedComponent ;
+            sh:class bcfOWL:Component ;
+            sh:nodeKind sh:IRI ] ;
+        sh:property [
+            sh:path bcfOWL:hasVisibilityException ;
+            sh:class bcfOWL:Component ;
+            sh:nodeKind sh:IRI ] ;
+        sh:property [
+            sh:path bcfOWL:hasSnapshot ;
+            sh:maxCount 1 ;
+            sh:class dcat:Dataset ;
+            sh:nodeKind sh:IRI ] ;
+        sh:property [
+            sh:path bcfOWL:hasColoring ;
+            sh:nodeKind sh:BlankNodeOrIRI ;
+            sh:node bcfsh:ColoringShape ] ;
+        sh:property [
+            sh:path bcfOWL:hasLine ;
+            sh:nodeKind sh:BlankNodeOrIRI ;
+            sh:node bcfsh:LineShape ] ;
+        sh:property [
+            sh:path bcfOWL:hasClippingPlane ;
+            sh:nodeKind sh:BlankNodeOrIRI ;
+            sh:node bcfsh:ClippingPlaneShape ] ;
+        sh:property [
+            sh:path bcfOWL:hasBitmap ;
+            sh:nodeKind sh:BlankNodeOrIRI ;
+            sh:node bcfsh:BitmapShape ] ;
+        sh:property [
+            sh:path bcfOWL:hasPerspectiveCamera ;
+            sh:maxCount 1 ;
+            sh:class sosa:Observation ;
+            sh:nodeKind sh:IRI ;
+            sh:node bcfsh:PerspectiveObservationShape ] ;
+        sh:property [
+            sh:path bcfOWL:hasOrthogonalCamera ;
+            sh:maxCount 1 ;
+            sh:class sosa:Observation ;
+            sh:nodeKind sh:IRI ;
+            sh:node bcfsh:OrthogonalObservationShape ] ;
+        # BCF permits camera-only, snapshot-only, or both, but never both camera modes.
+        sh:or (
+            [ sh:property [ sh:path bcfOWL:hasPerspectiveCamera ; sh:minCount 1 ] ]
+            [ sh:property [ sh:path bcfOWL:hasOrthogonalCamera ; sh:minCount 1 ] ]
+            [ sh:property [ sh:path bcfOWL:hasSnapshot ; sh:minCount 1 ] ]
+        ) ;
+        sh:not [
+            sh:and (
+                [ sh:property [ sh:path bcfOWL:hasPerspectiveCamera ; sh:minCount 1 ] ]
+                [ sh:property [ sh:path bcfOWL:hasOrthogonalCamera ; sh:minCount 1 ] ]
+            )
+        ] ;
+        # Coordinate-bearing visual state needs a camera pose. The first branch
+        # accepts Viewpoints with none of those properties; the other branches
+        # accept either camera mode.
+        sh:or (
+            [ sh:not [ sh:or (
+                [ sh:property [ sh:path bcfOWL:hasLine ; sh:minCount 1 ] ]
+                [ sh:property [ sh:path bcfOWL:hasClippingPlane ; sh:minCount 1 ] ]
+                [ sh:property [ sh:path bcfOWL:hasBitmap ; sh:minCount 1 ] ]
+            ) ] ]
+            [ sh:property [ sh:path bcfOWL:hasPerspectiveCamera ; sh:minCount 1 ] ]
+            [ sh:property [ sh:path bcfOWL:hasOrthogonalCamera ; sh:minCount 1 ] ]
+        ) .
+
+#  Projection-mode shapes for the referenced observation
+#  Applied only via a Viewpoint's camera reference, never as a target on
+#  sosa:Observation. This keeps the native observation unconstrained.
+
+bcfsh:PerspectiveObservationShape
+        a            sh:NodeShape ;
+        sh:property [
+            sh:path bcfOWL:hasFieldOfView ;
+            sh:minCount 1 ; sh:maxCount 1 ;
+            sh:datatype xsd:double ;
+            sh:message "A perspective camera observation must have exactly one hasFieldOfView." ] ;
+        sh:property [
+            sh:path bcfOWL:hasViewToWorldScale ;
+            sh:maxCount 0 ;
+            sh:message "A perspective camera observation must not have hasViewToWorldScale." ] ;
+        sh:property [
+            sh:path bcfOWL:hasAspectRatio ;
+            sh:minCount 1 ; sh:maxCount 1 ;
+            sh:datatype xsd:double ;
+            sh:message "A perspective camera observation must have exactly one hasAspectRatio." ] .
+
+bcfsh:OrthogonalObservationShape
+        a            sh:NodeShape ;
+        sh:property [
+            sh:path bcfOWL:hasViewToWorldScale ;
+            sh:minCount 1 ; sh:maxCount 1 ;
+            sh:datatype xsd:double ;
+            sh:message "An orthogonal camera observation must have exactly one hasViewToWorldScale." ] ;
+        sh:property [
+            sh:path bcfOWL:hasFieldOfView ;
+            sh:maxCount 0 ;
+            sh:message "An orthogonal camera observation must not have hasFieldOfView." ] ;
+        sh:property [
+            sh:path bcfOWL:hasAspectRatio ;
+            sh:minCount 1 ; sh:maxCount 1 ;
+            sh:datatype xsd:double ;
+            sh:message "An orthogonal camera observation must have exactly one hasAspectRatio." ] .
+
+#  Viewpoint-internal visual markup
+
+# JSON number syntax, repeated explicitly to keep these SHACL-Core shapes
+# portable. The vector norm is an application-level check by design.
+bcfsh:LineShape
+        a sh:NodeShape ;
+        sh:class bcfOWL:Line ;
+        sh:property [
+            sh:path bcfOWL:hasStartPoint ;
+            sh:minCount 1 ; sh:maxCount 1 ;
+            sh:datatype bcfOWL:point3D ;
+            sh:pattern "^\\[-?(0|[1-9][0-9]*)(\\.[0-9]+)?([eE][+-]?[0-9]+)?,-?(0|[1-9][0-9]*)(\\.[0-9]+)?([eE][+-]?[0-9]+)?,-?(0|[1-9][0-9]*)(\\.[0-9]+)?([eE][+-]?[0-9]+)?\\]$" ] ;
+        sh:property [
+            sh:path bcfOWL:hasEndPoint ;
+            sh:minCount 1 ; sh:maxCount 1 ;
+            sh:datatype bcfOWL:point3D ;
+            sh:pattern "^\\[-?(0|[1-9][0-9]*)(\\.[0-9]+)?([eE][+-]?[0-9]+)?,-?(0|[1-9][0-9]*)(\\.[0-9]+)?([eE][+-]?[0-9]+)?,-?(0|[1-9][0-9]*)(\\.[0-9]+)?([eE][+-]?[0-9]+)?\\]$" ] .
+
+bcfsh:ClippingPlaneShape
+        a sh:NodeShape ;
+        sh:class bcfOWL:ClippingPlane ;
+        sh:property [
+            sh:path bcfOWL:hasLocation ;
+            sh:minCount 1 ; sh:maxCount 1 ;
+            sh:datatype bcfOWL:point3D ;
+            sh:pattern "^\\[-?(0|[1-9][0-9]*)(\\.[0-9]+)?([eE][+-]?[0-9]+)?,-?(0|[1-9][0-9]*)(\\.[0-9]+)?([eE][+-]?[0-9]+)?,-?(0|[1-9][0-9]*)(\\.[0-9]+)?([eE][+-]?[0-9]+)?\\]$" ] ;
+        sh:property [
+            sh:path bcfOWL:hasDirection ;
+            sh:minCount 1 ; sh:maxCount 1 ;
+            sh:datatype bcfOWL:vector3D ;
+            sh:pattern "^\\[-?(0|[1-9][0-9]*)(\\.[0-9]+)?([eE][+-]?[0-9]+)?,-?(0|[1-9][0-9]*)(\\.[0-9]+)?([eE][+-]?[0-9]+)?,-?(0|[1-9][0-9]*)(\\.[0-9]+)?([eE][+-]?[0-9]+)?\\]$" ] .
+
+bcfsh:ColoringShape
+        a sh:NodeShape ;
+        sh:class bcfOWL:Coloring ;
+        sh:property [
+            sh:path bcfOWL:hasColor ;
+            sh:minCount 1 ; sh:maxCount 1 ;
+            sh:datatype xsd:string ;
+            sh:pattern "^([0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$" ] ;
+        sh:property [
+            sh:path bcfOWL:hasComponent ;
+            sh:minCount 1 ;
+            sh:class bcfOWL:Component ;
+            sh:nodeKind sh:IRI ] .
+
+bcfsh:BitmapShape
+        a sh:NodeShape ;
+        sh:class bcfOWL:Bitmap ;
+        sh:property [
+            sh:path bcfOWL:hasBitmapImage ;
+            sh:minCount 1 ; sh:maxCount 1 ;
+            sh:class dcat:Dataset ;
+            sh:nodeKind sh:IRI ] ;
+        sh:property [
+            sh:path bcfOWL:hasLocation ;
+            sh:minCount 1 ; sh:maxCount 1 ;
+            sh:datatype bcfOWL:point3D ;
+            sh:pattern "^\\[-?(0|[1-9][0-9]*)(\\.[0-9]+)?([eE][+-]?[0-9]+)?,-?(0|[1-9][0-9]*)(\\.[0-9]+)?([eE][+-]?[0-9]+)?,-?(0|[1-9][0-9]*)(\\.[0-9]+)?([eE][+-]?[0-9]+)?\\]$" ] ;
+        sh:property [
+            sh:path bcfOWL:hasNormal ;
+            sh:minCount 1 ; sh:maxCount 1 ;
+            sh:datatype bcfOWL:vector3D ;
+            sh:pattern "^\\[-?(0|[1-9][0-9]*)(\\.[0-9]+)?([eE][+-]?[0-9]+)?,-?(0|[1-9][0-9]*)(\\.[0-9]+)?([eE][+-]?[0-9]+)?,-?(0|[1-9][0-9]*)(\\.[0-9]+)?([eE][+-]?[0-9]+)?\\]$" ] ;
+        sh:property [
+            sh:path bcfOWL:hasUpVector ;
+            sh:minCount 1 ; sh:maxCount 1 ;
+            sh:datatype bcfOWL:vector3D ;
+            sh:pattern "^\\[-?(0|[1-9][0-9]*)(\\.[0-9]+)?([eE][+-]?[0-9]+)?,-?(0|[1-9][0-9]*)(\\.[0-9]+)?([eE][+-]?[0-9]+)?,-?(0|[1-9][0-9]*)(\\.[0-9]+)?([eE][+-]?[0-9]+)?\\]$" ] ;
+        sh:property [
+            sh:path bcfOWL:hasHeight ;
+            sh:minCount 1 ; sh:maxCount 1 ;
+            sh:datatype xsd:double ] .
+
+bcfsh:BinaryMediaShape
+        a sh:NodeShape ;
+        sh:targetObjectsOf bcfOWL:hasSnapshot ;
+        sh:targetObjectsOf bcfOWL:hasBitmapImage ;
+        sh:class dcat:Dataset ;
+        sh:nodeKind sh:IRI ;
+        sh:property [
+            sh:path dcat:distribution ;
+            sh:minCount 1 ;
+            sh:class dcat:Distribution ;
+            sh:node bcfsh:DistributionShape ] .
+
+# A Distribution is reached through its Dataset, so it can be a blank node.
+bcfsh:DistributionShape
+        a sh:NodeShape ;
+        sh:class dcat:Distribution ;
+        sh:property [
+            sh:path dcat:downloadURL ;
+            sh:minCount 1 ; sh:maxCount 1 ;
+            sh:nodeKind sh:IRI ] ;
+        sh:property [
+            sh:path dcat:mediaType ;
+            sh:minCount 1 ; sh:maxCount 1 ;
+            sh:datatype xsd:string ] .
+
+#  Component
+#  A component must resolve to something: a linked-data element or an IFC GUID.
+
+bcfsh:ComponentShape
+        a            sh:NodeShape ;
+        sh:targetClass bcfOWL:Component ;
+        sh:nodeKind sh:IRI ;
+        sh:property [
+            sh:path bcfOWL:hasElement ;
+            sh:maxCount 1 ;
+            sh:class bot:Element ] ;
+        sh:property [
+            sh:path bcfOWL:hasIfcGuid ;
+            sh:maxCount 1 ;
+            sh:datatype xsd:string ] ;
+        sh:property [
+            sh:path bcfOWL:hasOriginatingSystem ;
+            sh:maxCount 1 ;
+            sh:class bcfOWL:OriginatingSystem ;
+            sh:nodeKind sh:IRI ] ;
+        sh:property [
+            sh:path bcfOWL:hasAuthoringToolId ;
+            sh:maxCount 1 ;
+            sh:datatype xsd:string ] ;
+        sh:or (
+            [ sh:path bcfOWL:hasElement ; sh:minCount 1 ]
+            [ sh:path bcfOWL:hasIfcGuid ;    sh:minCount 1 ]
+        ) ;
+        sh:message "A Component must reference either a bot:Element or an IFC GUID." .
+
+
+#################################################################
+#  Controlled-vocabulary membership (SHACL-SPARQL)
+#
+#  BCF takes the type, status, labels, priority, stage and users of a Topic
+#  from the project extensions. Each value must be a member of the matching
+#  scheme of the ExtensionSchema of the project. If the ExtensionSchema has no
+#  scheme for a category, each value of that category is a violation.
+#
+#  These rules need a SHACL-SPARQL engine. A SHACL-Core validator ignores them.
+#################################################################
+
+bcfsh:
+        a            owl:Ontology ;
+        sh:declare [ sh:prefix "bcfOWL" ;  sh:namespace "https://w3id.org/bcfOWL#"^^xsd:anyURI ] ;
+        sh:declare [ sh:prefix "dcterms" ; sh:namespace "http://purl.org/dc/terms/"^^xsd:anyURI ] ;
+        sh:declare [ sh:prefix "skos" ;    sh:namespace "http://www.w3.org/2004/02/skos/core#"^^xsd:anyURI ] .
+
+bcfsh:TopicStatusInSchemeShape
+        a            sh:NodeShape ;
+        sh:targetClass bcfOWL:Topic ;
+        sh:sparql [
+            sh:message "Topic status is not a member of the project's status scheme." ;
+            sh:prefixes bcfsh: ;
+            sh:select """
+                SELECT $this ?value WHERE {
+                    $this bcfOWL:hasTopicStatus ?value ;
+                          bcfOWL:hasProject/bcfOWL:hasExtensionSchema ?ext .
+                    FILTER NOT EXISTS { ?ext bcfOWL:hasStatusScheme ?scheme . ?value skos:inScheme ?scheme }
+                }
+            """ ] .
+
+bcfsh:TopicTypeInSchemeShape
+        a            sh:NodeShape ;
+        sh:targetClass bcfOWL:Topic ;
+        sh:sparql [
+            sh:message "Topic type is not a member of the project's type scheme." ;
+            sh:prefixes bcfsh: ;
+            sh:select """
+                SELECT $this ?value WHERE {
+                    $this bcfOWL:hasTopicType ?value ;
+                          bcfOWL:hasProject/bcfOWL:hasExtensionSchema ?ext .
+                    FILTER NOT EXISTS { ?ext bcfOWL:hasTypeScheme ?scheme . ?value skos:inScheme ?scheme }
+                }
+            """ ] .
+
+bcfsh:TopicLabelInSchemeShape
+        a            sh:NodeShape ;
+        sh:targetClass bcfOWL:Topic ;
+        sh:sparql [
+            sh:message "Topic label is not a member of the project's label scheme." ;
+            sh:prefixes bcfsh: ;
+            sh:select """
+                SELECT $this ?value WHERE {
+                    $this bcfOWL:hasLabels ?value ;
+                          bcfOWL:hasProject/bcfOWL:hasExtensionSchema ?ext .
+                    FILTER NOT EXISTS { ?ext bcfOWL:hasLabelScheme ?scheme . ?value skos:inScheme ?scheme }
+                }
+            """ ] .
+
+bcfsh:TopicPriorityInSchemeShape
+        a            sh:NodeShape ;
+        sh:targetClass bcfOWL:Topic ;
+        sh:sparql [
+            sh:message "Topic priority is not a member of the project's priority scheme." ;
+            sh:prefixes bcfsh: ;
+            sh:select """
+                SELECT $this ?value WHERE {
+                    $this bcfOWL:hasPriority ?value ;
+                          bcfOWL:hasProject/bcfOWL:hasExtensionSchema ?ext .
+                    FILTER NOT EXISTS { ?ext bcfOWL:hasPriorityScheme ?scheme . ?value skos:inScheme ?scheme }
+                }
+            """ ] .
+
+bcfsh:TopicStageInSchemeShape
+        a            sh:NodeShape ;
+        sh:targetClass bcfOWL:Topic ;
+        sh:sparql [
+            sh:message "Topic stage is not a member of the project's stage scheme." ;
+            sh:prefixes bcfsh: ;
+            sh:select """
+                SELECT $this ?value WHERE {
+                    $this bcfOWL:hasStage ?value ;
+                          bcfOWL:hasProject/bcfOWL:hasExtensionSchema ?ext .
+                    FILTER NOT EXISTS { ?ext bcfOWL:hasStageScheme ?scheme . ?value skos:inScheme ?scheme }
+                }
+            """ ] .
+
+# BCF takes creation_author, assigned_to and modified_author from the users
+# list of the project extensions.
+bcfsh:AgentIsProjectUserShape
+        a            sh:NodeShape ;
+        sh:targetClass bcfOWL:Topic, bcfOWL:Comment ;
+        sh:sparql [
+            sh:message "The creator, assignee or last editor is not a user of the project's ExtensionSchema." ;
+            sh:prefixes bcfsh: ;
+            sh:select """
+                SELECT $this ?path ?value WHERE {
+                    VALUES ?path { dcterms:creator bcfOWL:hasAssignedTo bcfOWL:modifiedBy }
+                    $this ?path ?value ;
+                          bcfOWL:hasProject/bcfOWL:hasExtensionSchema ?ext .
+                    FILTER NOT EXISTS { ?ext bcfOWL:hasUser ?value }
+                }
+            """ ] .
+
+#  Project consistency (SHACL-SPARQL)
+#  In BCF, a Comment or a Viewpoint is in the project of its Topic.
+
+bcfsh:SameProjectAsTopicShape
+        a            sh:NodeShape ;
+        sh:targetClass bcfOWL:Comment, bcfOWL:Viewpoint ;
+        sh:sparql [
+            sh:message "The project is not the same as the project of the Topic." ;
+            sh:prefixes bcfsh: ;
+            sh:select """
+                SELECT $this ?value WHERE {
+                    $this bcfOWL:hasProject ?value ;
+                          bcfOWL:hasTopic/bcfOWL:hasProject ?topicProject .
+                    FILTER (?value != ?topicProject)
+                }
+            """ ] .

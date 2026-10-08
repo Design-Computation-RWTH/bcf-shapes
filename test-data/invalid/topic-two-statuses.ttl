@@ -1,0 +1,16 @@
+@prefix bcfOWL:  <https://w3id.org/bcfOWL#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix sosa:    <http://www.w3.org/ns/sosa/> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+@prefix ex:      <https://example.org/fixture#> .
+
+# bcfOWL:hasTopicStatus is sh:maxCount 1. Two current statuses is exactly the
+# case OWL cardinality would NOT catch: a reasoner would infer the two are the
+# same individual instead of reporting a fault.
+ex:topic-two-statuses a bcfOWL:Topic ;
+    dcterms:identifier "two-statuses" ;
+    dcterms:title "Two statuses" ;
+    dcterms:creator ex:anna ;
+    dcterms:created "2026-01-01T00:00:00Z"^^xsd:dateTime ;
+    bcfOWL:hasProject ex:project ;
+    bcfOWL:hasTopicStatus ex:status-open , ex:status-closed .

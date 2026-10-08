@@ -1,0 +1,18 @@
+@prefix bcfOWL:  <https://w3id.org/bcfOWL#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix prov:    <http://www.w3.org/ns/prov#> .
+@prefix skos:    <http://www.w3.org/2004/02/skos/core#> .
+@prefix spot:    <https://w3id.org/spot#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+@prefix ex:      <https://example.org/fixture#> .
+
+# The creator is a prov:Agent, but the ExtensionSchema of the project does not
+# list it as a user. BCF takes creation_author from the users list.
+ex:bob a prov:Person .
+
+ex:topic-creator-not-user a bcfOWL:Topic ;
+    dcterms:identifier "creator-not-user" ;
+    dcterms:title "Creator not a user" ;
+    dcterms:creator ex:bob ;
+    dcterms:created "2026-01-01T00:00:00Z"^^xsd:dateTime ;
+    bcfOWL:hasProject ex:project .

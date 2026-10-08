@@ -1,0 +1,28 @@
+@prefix bcfOWL:  <https://w3id.org/bcfOWL#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix sosa:    <http://www.w3.org/ns/sosa/> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+@prefix ex:      <https://example.org/fixture#> .
+
+# BCF permits a perspective or an orthogonal camera, never both.
+ex:topic-vp a bcfOWL:Topic ;
+    dcterms:identifier "vp-topic" ;
+    dcterms:title "Viewpoint host" ;
+    dcterms:creator ex:anna ;
+    dcterms:created "2026-01-01T00:00:00Z"^^xsd:dateTime ;
+    bcfOWL:hasProject ex:project .
+
+ex:viewpoint-two-cameras a bcfOWL:Viewpoint ;
+    dcterms:identifier "two-cameras" ;
+    bcfOWL:hasTopic ex:topic-vp ;
+    bcfOWL:hasProject ex:project ;
+    bcfOWL:hasPerspectiveCamera ex:camera-perspective ;
+    bcfOWL:hasOrthogonalCamera ex:camera-orthogonal .
+
+ex:camera-perspective a sosa:Observation ;
+    bcfOWL:hasFieldOfView "60.0"^^xsd:double ;
+    bcfOWL:hasAspectRatio "1.5"^^xsd:double .
+
+ex:camera-orthogonal a sosa:Observation ;
+    bcfOWL:hasViewToWorldScale "10.0"^^xsd:double ;
+    bcfOWL:hasAspectRatio "1.5"^^xsd:double .

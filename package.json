@@ -1,0 +1,28 @@
+{
+  "name": "bcfowl-shapes",
+  "version": "1.0.0",
+  "private": true,
+  "description": "SHACL conformance profile for bcfOWL 1.0.0: the structural rules of BCF, checked under the closed-world assumption.",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "tsx --test tests/*.test.ts",
+    "validate": "npm run format:check && npm run typecheck && npm test"
+  },
+  "devDependencies": {
+    "@rdfjs/data-model": "^2.1.2",
+    "@rdfjs/dataset": "^2.0.3",
+    "@types/node": "^22.0.0",
+    "oxigraph": "^0.5.9",
+    "prettier": "^3.9.6",
+    "shacl-engine": "^1.1.2",
+    "tsx": "^4.23.1",
+    "typescript": "^7.0.2"
+  }
+}
