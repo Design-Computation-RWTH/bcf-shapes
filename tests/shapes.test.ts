@@ -14,7 +14,7 @@ import { loadShapes, loadTurtle, validate } from "./support/validator.js";
 const root = new URL("../", import.meta.url);
 const testData = (path: string) => new URL(`test-data/${path}`, root);
 const shapes = await loadShapes(
-  new URL("shapes/bcfOWL-shapes.ttl", root),
+  new URL("shapes/bcf-shapes.ttl", root),
   new URL("tests/support/bcfOWL.ttl", root),
 );
 

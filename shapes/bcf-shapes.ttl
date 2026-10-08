@@ -11,7 +11,7 @@
 @prefix bot:     <https://w3id.org/bot#> .
 @prefix spot:    <https://w3id.org/spot#> .
 @prefix bcfOWL:  <https://w3id.org/bcfOWL#> .
-@prefix bcfsh:   <https://w3id.org/bcfOWL/shapes#> .
+@prefix bcfsh:   <https://github.com/Design-Computation-RWTH/bcf-shapes#> .
 
 #  SHACL shapes for bcfOWL 1.0.0 (https://w3id.org/bcfOWL#)
 #

@@ -1,4 +1,4 @@
-bcfOWL-shapes: SHACL shapes and test data
+bcf-shapes: SHACL shapes and test data
 Copyright (c) 2026 Oliver Schulz, Design Computation, RWTH Aachen University
 
 The files in the folders shapes/ and test-data/ are licensed under the Creative

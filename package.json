@@ -1,5 +1,5 @@
 {
-  "name": "bcfowl-shapes",
+  "name": "bcf-shapes",
   "version": "1.0.0",
   "private": true,
   "description": "SHACL conformance profile for bcfOWL 1.0.0: the structural rules of BCF, checked under the closed-world assumption.",

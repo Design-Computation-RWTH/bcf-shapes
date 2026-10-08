@@ -1,4 +1,4 @@
-# bcfOWL-shapes
+# bcf-shapes
 
 This repository contains the SHACL conformance profile for [bcfOWL 1.0.0](https://github.com/Design-Computation-RWTH/bcfOWL)(`https://w3id.org/bcfOWL#`).
 
@@ -13,13 +13,13 @@ bcfOWL states no cardinality restrictions. Under the open-world assumption, OWL 
 
 The shapes target only the BCF coordination layer. A photograph, its capture (`sosa:Observation`), or its media is not constrained until a Viewpoint refers to it.
 
-- Shapes: [`shapes/bcfOWL-shapes.ttl`](shapes/bcfOWL-shapes.ttl)
-- Shapes namespace: `https://w3id.org/bcfOWL/shapes#` (prefix `bcfsh`)
+- Shapes: [`shapes/bcf-shapes.ttl`](shapes/bcf-shapes.ttl)
+- Shapes namespace: `https://github.com/Design-Computation-RWTH/bcf-shapes#` (prefix `bcfsh`)
 - Test data: [`test-data/`](test-data)
 
 ## Use the shapes
 
-Give the validator `shapes/bcfOWL-shapes.ttl` and the bcfOWL ontology as the shapes graph, and your data as the data graph. The validator must support the SHACL-SPARQL extension. Without it, the checks of the controlled vocabularies and of the project consistency do not run.
+Give the validator `shapes/bcf-shapes.ttl` and the bcfOWL ontology as the shapes graph, and your data as the data graph. The validator must support the SHACL-SPARQL extension. Without it, the checks of the controlled vocabularies and of the project consistency do not run.
 
 ## Provenance and RDF 1.2
 

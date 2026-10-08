@@ -1,7 +1,7 @@
 # Invalid bcfOWL test data
 
 Each file here **must fail** SHACL validation against
-`shapes/bcfOWL-shapes.ttl`. They exist so the shapes are proven to
+`shapes/bcf-shapes.ttl`. They exist so the shapes are proven to
 reject, not only to accept: a shape with a typo in its target passes every
 valid dataset and catches nothing.
 
